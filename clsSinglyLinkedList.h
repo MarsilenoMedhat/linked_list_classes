@@ -16,17 +16,55 @@ private:
     _Node* _Current;
     int _Count = 0;
 
+    // check if the list is empty or not by checking the head and the tail
+    bool _IsListEmpty() {
+        return _Head == nullptr;
+    }
+
+    // check if the node is empty or not
+    bool _IsNodeEmpty(_Node* node) {
+        return node == nullptr;
+    }
+
+    // create a new node
+    _Node* _CreateNewNode(T val, _Node* nextNode) {
+        _Node* newNode = new _Node;
+        newNode->_Value = val;
+        newNode->_Next = nextNode;
+        return newNode;
+    }
+
+    // create a node is an empty list
+    _Node* _CreateNodeInEmptyList(T val) {
+        _Node* newNode = _CreateNewNode(val, nullptr);
+        _Head = newNode;
+        _Tail = newNode;
+        _Current = newNode;
+        return newNode;
+    }
+
+    bool _DeleteSingleNodeList() {
+        delete _Head;
+        _Head = nullptr;
+        _Current = nullptr;
+        _Tail = nullptr;
+        return true;
+    }
+
     // finds node by the val and return the node once we find it, and return nullptr if it doesn't exist.
     _Node* _FindNode(T searchVal) {
         
         // check if the list is empty or not.
-        if (_Head == nullptr) {
+        if (_IsListEmpty()) {
             return nullptr;
         }
 
         _Node* tempNode = _Head;
 
-        while (tempNode != nullptr) {
+        // check if node is exists starting from the head
+        while (!_IsNodeEmpty(tempNode)) {
+
+            // return the node when find it
             if (tempNode->_Value == searchVal) {
                 return tempNode;
             }
@@ -38,18 +76,14 @@ private:
 
     // insert at the beginning of the list.
     bool _InsertAtTheBeginning(T newVal) {
-        _Node* newNode = new _Node;
-        newNode->_Value = newVal;
+        _Node* newNode = nullptr;
 
         // check if the list is empty or not.
-        if (_Head == nullptr) {
-            newNode->_Next = nullptr;
-            _Head = newNode;
-            _Tail = newNode;
-            _Current = newNode;
+        if (_IsListEmpty()) {
+            newNode = _CreateNodeInEmptyList(newVal);
         }
         else {
-            newNode->_Next = _Head;
+            newNode = _CreateNewNode(newVal, _Head);
             _Head = newNode;
         }
         _Count++;
@@ -58,18 +92,14 @@ private:
 
     // insert at the end of the list.
     bool _InsertAtTheEnd(T newVal) {
-        _Node* newNode = new _Node;
-        newNode->_Value = newVal;
-        newNode->_Next = nullptr;
+        _Node* newNode = nullptr;
         
         // check if the list is empty or not.
-        if (_Head == nullptr) {
-            newNode->_Next = nullptr;
-            _Head = newNode;
-            _Tail = newNode;
-            _Current = newNode;
+        if (_IsListEmpty()) {
+            newNode = _CreateNodeInEmptyList(newVal);
         }
         else {
+            newNode = _CreateNewNode(newVal, nullptr);
             _Tail->_Next = newNode;
             _Tail = newNode;
         }
@@ -81,14 +111,14 @@ private:
     bool _InsertAfter(T preVal, T newVal) {
 
         // check if the list id empty or not.
-        if (_Head == nullptr) {
+        if (_IsListEmpty()) {
             return false;
         }
 
         _Node* tempNode = _FindNode(preVal);
 
         // check if the previous not is exists or not
-        if (tempNode == nullptr) {
+        if (_IsNodeEmpty(tempNode)) {
             return false;
         }
 
@@ -97,9 +127,7 @@ private:
             return _InsertAtTheEnd(newVal);
         }
         
-        _Node* newNode = new _Node;
-        newNode->_Value = newVal;
-        newNode->_Next = tempNode->_Next;
+        _Node* newNode = _CreateNewNode(newVal, tempNode->_Next);
         tempNode->_Next = newNode;
         _Count++;
         return true;
@@ -109,16 +137,13 @@ private:
     bool _DeleteFirstNode() {
 
         // check if the list is empty or not.
-        if (_Head == nullptr) {
+        if (_IsListEmpty()) {
             return false;
         }
 
         // check if the list has one node or not.
-        if (_Head->_Next == nullptr) {
-            delete _Head;
-            _Head = nullptr;
-            _Current = nullptr;
-            _Tail = nullptr;
+        if (_Head == _Tail) {
+            _DeleteSingleNodeList();
             _Count--;
             return true;
         }
@@ -128,9 +153,9 @@ private:
             _Current = _Current->_Next;
         }
 
-        _Node* tempNode = _Head;
+        _Node* nodeToDelete = _Head;
         _Head = _Head->_Next;
-        delete tempNode;
+        delete nodeToDelete;
         _Count--;
         return true;
     }
@@ -139,16 +164,13 @@ private:
     bool _DeleteLastNode() {
 
         // check if the list is empty or not.
-        if (_Head == nullptr) {
+        if (_IsListEmpty()) {
             return false;
         }
 
         // check if the list has one node or not.
-        if (_Head->_Next == nullptr) {
-            delete _Head;
-            _Head = nullptr;
-            _Current = nullptr;
-            _Tail = nullptr;
+        if (_Head == _Tail) {
+            _DeleteSingleNodeList();
             _Count--;
             return true;
         }
@@ -173,7 +195,7 @@ private:
     bool _DeleteNode(T deleteVal) {
 
         // check if the list is empty or not.
-        if (_Head == nullptr) {
+        if (_IsListEmpty()) {
             return false;
         }
 
@@ -188,25 +210,24 @@ private:
         }
         
         //  check if the node is existed or not.
-        _Node* temp_DeleteNode = _FindNode(deleteVal);
-        if (temp_DeleteNode == nullptr) {
+        _Node* nodeToDelete = _FindNode(deleteVal);
+        if (_IsNodeEmpty(nodeToDelete)) {
             return false;
         }
 
-        _Node* PreNode = nullptr;
-        _Node* tempNode = _Head;
-        while (tempNode != temp_DeleteNode) {
-            PreNode = tempNode;
-            tempNode = tempNode->_Next;
+        // find the previous node the one want to delete
+        _Node* preNode = _Head;
+        while (preNode->_Next != nodeToDelete) {
+            preNode = preNode->_Next;
         }
 
         // check if the current is at the node we want to delete or not.
-        if (_Current == temp_DeleteNode) {
+        if (_Current == nodeToDelete) {
             _Current = _Head;
         }
 
-        PreNode->_Next = temp_DeleteNode->_Next;
-        delete temp_DeleteNode;
+        preNode->_Next = nodeToDelete->_Next;
+        delete nodeToDelete;
         _Count--;
         return true;
     }
@@ -214,12 +235,12 @@ private:
     // delete the full list.
     void _DeleteFullList() {
 
-        if (_Head == nullptr) {
+        if (_IsListEmpty()) {
             return;
         }
         
         _Node* tempNode = nullptr;
-        while (_Head != nullptr) {
+        while (!_IsNodeEmpty(_Head)) {
             tempNode = _Head;
             _Head = _Head->_Next;
             delete tempNode;
@@ -310,7 +331,7 @@ private:
     }
 
     bool deleteLastNode() {
-        return_DeleteLastNode();
+        return _DeleteLastNode();
     }
 
     bool deleteNode(T deleteVal) {
@@ -318,7 +339,7 @@ private:
     }
 
     void deleteFullList() {
-        return _DeleteFullList();
+        _DeleteFullList();
     }
 
     ~singlyList() {

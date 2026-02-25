@@ -201,7 +201,7 @@ private:
 
 public:
 
-    clsCircularSinglyList(T value) {
+    clsCircularSinglyLinkedList(T value) {
         _Node* newNode = new _Node;
         newNode->_Value = value;
         newNode->_Next = newNode;
@@ -212,7 +212,7 @@ public:
         _Count++;
     }
     
-    clsCircularSinglyList() {
+    clsCircularSinglyLinkedList() {
         _Current = nullptr;
         _Head = nullptr;
         _Tail = nullptr;
@@ -291,7 +291,7 @@ public:
     }
 
 
-    ~clsCircularSinglyList() {
+    ~clsCircularSinglyLinkedList() {
         deleteFullList();
     } 
 };
@@ -325,18 +325,191 @@ private:
             if (tempNode->_Value == searchVal) {
                 return tempNode;
             }
-            tempNode = tempNode->Next;            
+            tempNode = tempNode->_Next;            
         } while (tempNode != _Head);
 
         return nullptr;
     }
 
-public:
+    // insert new node at the beginning or at the beginning.
+    bool _InsertAtBeginningOrEnd(T newVal, bool AtBeginning) {
+        _Node* newNode = new _Node;
+        newNode->_Value = newVal;
+        
+        // check if the list is empty or not.
+        if (_Head == nullptr) {
+            newNode->_Next = newNode;
+            newNode->_Previous = newNode;
 
-    CircularDoublyList(T val) {
+            _Head = newNode;
+            _Tail = newNode;
+            _Current = newNode;
+            _Count++;
+            return true;
+        }
+
+        if (AtBeginning == true) {
+            newNode->_Next = _Head;
+            newNode->_Previous = _Tail;
+            _Head->_Previous = newNode;
+            _Tail->_Next = newNode;
+            _Head = newNode;
+        }
+        else {
+            newNode->_Next = _Head;
+            newNode->_Previous = _Tail;
+            _Head->_Previous = newNode;
+            _Tail->_Next = newNode;
+            _Tail = newNode;
+        }
+        _Count++;
+        return true;
+    }
+
+    // insert after a spesific node by check the previous node by value.
+    bool _InsertAfter(T previousVal, T newVal) {
+
+        // check if the list is empty or not.
+        if (_Head == nullptr) {
+            return  false;
+        }
+        
+        // find the previous node in the list.
+        _Node* previousNode = _FindNode(previousVal);
+        
+        // check if the previous node is exist or not
+        if (previousNode == nullptr) {
+            return false;
+        }
+
+        // check if the previos node is the last node in the list or not.
+        if (previousNode->_Next == _Head) {
+            return _InsertAtBeginningOrEnd(newVal, false);
+        } 
+        else {
+            _Node* newNode = new _Node;
+            newNode->_Value = newVal;
+
+            newNode->_Next = previousNode->_Next;
+            newNode->_Previous = previousNode;
+            previousNode->_Next->_Previous = newNode;
+            previousNode->_Next = newNode;
+            _Count++;
+        }
+        return true;
+    }
+
+    // delete the first node or the list.
+    bool _DeleteFirstOrLastNode(bool deleteFirst) {
+
+        // check if the list is empty or not.
+        if (_Head == nullptr) {
+            return false;
+        }
+
+        // check if the list has 1 node or more.
+        if (_Head == _Tail) {
+            delete _Head;
+            _Head = nullptr;
+            _Tail = nullptr;
+            _Current = nullptr;
+            _Count--;
+            return true;
+        }
+
+        if (deleteFirst == true) {
+            if (_Current == _Head) {
+                _Current = _Current->_Next;
+            }
+
+            _Head = _Head->_Next;
+            delete _Head->_Previous;
+            _Head->_Previous = _Tail;
+            _Tail->_Next = _Head;
+        }
+        else {
+            if (_Current == _Tail) {
+                _Current = _Tail->_Previous;
+            }
+
+            _Tail = _Tail->_Previous;
+            delete _Tail->_Next;
+            _Tail->_Next = _Head;
+            _Head->_Previous = _Tail;
+        }
+        _Count--;
+        return true;
+    }
+
+    // delete a specific node.
+    bool _DeleteNode(T Val) {
+        
+        // check if the list is empty or not.
+        if (_Head == nullptr) {
+            return false;
+        }
+        // check if the value we want to delete is in the first node or not.
+        if (Val == _Head->_Value) {
+            return _DeleteFirstOrLastNode(true);
+        }
+        // check if the value we want to delete is in the last node or not.
+        if (Val == _Tail->_Value) {
+            return _DeleteFirstOrLastNode(false);
+        }
+
+        _Node* nodeToDelete = nullptr;
+
+        // check if the value we want to delete is in the current node or not.
+        if (Val == _Current->_Value) {
+            nodeToDelete = _Current;
+
+            // move the current node to another point to make to it will not point to a deleted node.
+            _Current = _Head;
+        }
+        else {
+            // check the node in the list.
+            nodeToDelete = _FindNode(Val);
+        }
+        
+        // check if the node exists in the list or not.
+        if (nodeToDelete == nullptr) {
+            return false;
+        }
+        
+        nodeToDelete->_Previous->_Next = nodeToDelete->_Next;
+        nodeToDelete->_Next->_Previous = nodeToDelete->_Previous;
+        delete nodeToDelete;
+        _Count--;
+        return true;
+    }
+    
+    void _DeleteFullList() {
+
+        if (_Head == nullptr) {
+            return;
+        }
+
+        // break the loop
+        _Tail->_Next = nullptr;
+        _Node* tempNode = nullptr;
+
+        while (_Head != nullptr) {
+            tempNode = _Head;
+            _Head = _Head->_Next;
+            delete tempNode;
+        }
+        _Head = nullptr;
+        _Current = nullptr;
+        _Tail = nullptr;
+        _Count = 0;
+    }
+
+    public:
+
+    clsCircularDblLinkedList(T val) {
         _Node* newNode = new _Node;
         newNode->_Value = val;
-        newNode->_Next = NewNode;
+        newNode->_Next = newNode;
         newNode->_Previous = NewNode;
 
         _Current = newNode;
@@ -345,7 +518,7 @@ public:
         _Count++;
     }
 
-    CircularDoublyList() {
+    clsCircularDblLinkedList() {
         _Current = nullptr;
         _Head = nullptr;
         _Tail = nullptr;
@@ -382,7 +555,7 @@ public:
 
         // check if the val exists or not.
     bool find(T searchVal) {
-        return _FindNode(searchVal);
+        return _FindNode(searchVal) != nullptr;
     }
 
     // check if the value exists or not and set is as the current.
@@ -395,7 +568,35 @@ public:
         return false;
     }
 
-    ~CircularDoublyList() {
-        deleteFullList();
+    bool insertAtBeginning(T newVal) {
+        return _InsertAtBeginningOrEnd(newVal, true);
+    }
+
+    bool insertAtEnd(T newVal) {
+        return _InsertAtBeginningOrEnd(newVal, false);
+    }
+
+    bool insertAfter(T previousVal, T newVal) {
+        return _InsertAfter(previousVal, newVal);
+    }
+
+    bool deleteFirstNode() {
+        return _DeleteFirstOrLastNode(true);
+    }
+
+    bool deleteLastNode() {
+        return _DeleteFirstOrLastNode(false);
+    }
+
+    bool deleteNode(T Val) {
+        return _DeleteNode(Val);
+    }
+
+    void deleteFullList() {
+        return _DeleteFullList();
+    }
+
+    ~clsCircularDblLinkedList() {
+        _DeleteFullList();
     }
 };
